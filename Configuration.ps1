@@ -8,9 +8,8 @@ Import-Module MSAL.PS
 $Username = Read-Host -Prompt "Enter your username"
 $Password = Read-Host -Prompt "Enter your password" -AsSecureString
 
-# Prompt for Tenant ID and Client ID
+# Prompt for Tenant ID
 $TenantId = Read-Host -Prompt "Enter your Tenant ID"
-$ClientId = Read-Host -Prompt "Enter your Client ID"
 
 # Provide information on SSPR settings
 Write-Host "SSPR Settings:"
@@ -39,7 +38,7 @@ $Scope = "https://graph.microsoft.com/.default"
 
 try {
     # Get the access token using username and password
-    $TokenResponse = Get-MsalToken -ClientId $ClientId -TenantId $TenantId -Username $Username -Password $Password -Scopes $Scope
+    $TokenResponse = Get-MsalToken -TenantId $TenantId -Username $Username -Password $Password -Scopes $Scope
 
     if ($TokenResponse.AccessToken) {
         $AccessToken = $TokenResponse.AccessToken
