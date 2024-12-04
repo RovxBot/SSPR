@@ -86,7 +86,7 @@ try {
         Write-Output $Response
 
         # Configure authentication methods policy
-        $AuthMethodsUrl = "https://graph.microsoft.com/beta/policies/authenticationMethodsPolicy"
+        $AuthMethodsUrl = "https://graph.microsoft.com/beta/policies/authenticationmethodspolicy"
         $AuthMethodsData = @{
             "authenticationMethodConfigurations" = @(
                 @{
