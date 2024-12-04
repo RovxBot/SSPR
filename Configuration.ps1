@@ -4,6 +4,21 @@ Install-Module -Name MSAL.PS -Scope CurrentUser
 # Import required modules
 Import-Module MSAL.PS
 
+# Function to prompt for a boolean value and validate input
+function Prompt-ForBoolean {
+    param (
+        [string]$PromptMessage
+    )
+    while ($true) {
+        $input = Read-Host -Prompt $PromptMessage
+        if ($input -match "^(true|false)$") {
+            return [bool]::Parse($input)
+        } else {
+            Write-Host "Invalid input. Please enter 'true' or 'false'."
+        }
+    }
+}
+
 # Prompt for Tenant ID
 $TenantId = Read-Host -Prompt "Enter your Tenant ID"
 
@@ -17,15 +32,15 @@ Write-Host "4. Enable password writeback: true/false"
 Write-Host "5. Enable account unlock without password reset: true/false"
 
 # Prompt for SSPR settings
-$NotifyOnUserPasswordReset = Read-Host -Prompt "Notify on user password reset (true/false)"
-$NotifyOnAdminPasswordReset = Read-Host -Prompt "Notify on admin password reset (true/false)"
+$NotifyOnUserPasswordReset = Prompt-ForBoolean -PromptMessage "Notify on user password reset (true/false)"
+$NotifyOnAdminPasswordReset = Prompt-ForBoolean -PromptMessage "Notify on admin password reset (true/false)"
 $AuthenticationMethods = Read-Host -Prompt "Authentication methods (comma-separated, e.g., email,mobilePhone)"
-$EnablePasswordWriteback = Read-Host -Prompt "Enable password writeback (true/false)"
-$EnableAccountUnlock = Read-Host -Prompt "Enable account unlock without password reset (true/false)"
+$EnablePasswordWriteback = Prompt-ForBoolean -PromptMessage "Enable password writeback (true/false)"
+$EnableAccountUnlock = Prompt-ForBoolean -PromptMessage "Enable account unlock without password reset (true/false)"
 
 # Prompt for enabling SSPR for all users or a specific group
-$EnableForAllUsers = Read-Host -Prompt "Enable SSPR for all users? (true/false)"
-if (-not [bool]::Parse($EnableForAllUsers)) {
+$EnableForAllUsers = Prompt-ForBoolean -PromptMessage "Enable SSPR for all users? (true/false)"
+if (-not $EnableForAllUsers) {
     $GroupId = Read-Host -Prompt "Enter the Group ID to enable SSPR for"
 }
 
@@ -40,27 +55,27 @@ try {
         $AccessToken = $TokenResponse.AccessToken
 
         # Use the access token to configure SSPR settings
-        $Url = "https://graph.microsoft.com/beta/organization"
+        $Url = "https://graph.microsoft.com/beta/organization/{organization-id}/settings"
         $Headers = @{
             "Authorization" = "Bearer $AccessToken"
             "Content-Type"  = "application/json"
         }
         $Data = @{
             "selfServicePasswordResetPolicy" = @{
-                "enabled" = $true
+                "isEnabled" = $true
                 "notificationSettings" = @{
-                    "notifyOnUserPasswordReset" = [bool]::Parse($NotifyOnUserPasswordReset)
-                    "notifyOnAdminPasswordReset" = [bool]::Parse($NotifyOnAdminPasswordReset)
+                    "notifyOnUserPasswordReset" = $NotifyOnUserPasswordReset
+                    "notifyOnAdminPasswordResetViaEmail" = $NotifyOnAdminPasswordReset
                 }
                 "authenticationMethods" = $AuthenticationMethods -split ","
-                "allowUnlockWithoutPasswordReset" = [bool]::Parse($EnableAccountUnlock)
+                "allowUnlockWithoutPasswordReset" = $EnableAccountUnlock
             }
             "passwordWritebackConfiguration" = @{
-                "enabled" = [bool]::Parse($EnablePasswordWriteback)
+                "isEnabled" = $EnablePasswordWriteback
             }
         }
 
-        if (-not [bool]::Parse($EnableForAllUsers)) {
+        if (-not $EnableForAllUsers) {
             $Data["selfServicePasswordResetPolicy"]["scope"] = @{
                 "groupIds" = @($GroupId)
             }
@@ -85,7 +100,7 @@ try {
             )
         }
 
-        if (-not [bool]::Parse($EnableForAllUsers)) {
+        if (-not $EnableForAllUsers) {
             $AuthMethodsData["includeTargets"] = @(
                 @{
                     "id" = $GroupId
