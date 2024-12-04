@@ -33,14 +33,14 @@ if (-not [bool]::Parse($EnableForAllUsers)) {
 $Scope = "https://graph.microsoft.com/.default"
 
 try {
-    # Get the access token interactively
-    $TokenResponse = Get-MsalToken -TenantId $TenantId -ClientId "d3590ed6-52b3-4102-aeff-aad2292ab01c" -Scopes $Scope -Interactive
+    # Get the access token using device code flow
+    $TokenResponse = Get-MsalToken -TenantId $TenantId -ClientId "04b07795-8ddb-461a-bbee-02f9e1bf7b46" -Scopes $Scope -DeviceCode
 
     if ($TokenResponse.AccessToken) {
         $AccessToken = $TokenResponse.AccessToken
 
         # Use the access token to configure SSPR settings
-        $Url = "https://graph.microsoft.com/v1.0/organization/{organization-id}/settings"
+        $Url = "https://graph.microsoft.com/beta/organization"
         $Headers = @{
             "Authorization" = "Bearer $AccessToken"
             "Content-Type"  = "application/json"
@@ -71,7 +71,7 @@ try {
         Write-Output $Response
 
         # Configure authentication methods policy
-        $AuthMethodsUrl = "https://graph.microsoft.com/v1.0/policies/authenticationMethodsPolicy"
+        $AuthMethodsUrl = "https://graph.microsoft.com/beta/policies/authenticationMethodsPolicy"
         $AuthMethodsData = @{
             "authenticationMethodConfigurations" = @(
                 @{
