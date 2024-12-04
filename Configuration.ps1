@@ -4,10 +4,6 @@ Install-Module -Name MSAL.PS -Scope CurrentUser
 # Import required modules
 Import-Module MSAL.PS
 
-# Prompt for user credentials
-$Username = Read-Host -Prompt "Enter your username"
-$Password = Read-Host -Prompt "Enter your password" -AsSecureString
-
 # Prompt for Tenant ID
 $TenantId = Read-Host -Prompt "Enter your Tenant ID"
 
@@ -37,8 +33,8 @@ if (-not [bool]::Parse($EnableForAllUsers)) {
 $Scope = "https://graph.microsoft.com/.default"
 
 try {
-    # Get the access token using username and password
-    $TokenResponse = Get-MsalToken -TenantId $TenantId -ClientId "d3590ed6-52b3-4102-aeff-aad2292ab01c" -Username $Username -Password $Password -Scopes $Scope
+    # Get the access token interactively
+    $TokenResponse = Get-MsalToken -TenantId $TenantId -ClientId "d3590ed6-52b3-4102-aeff-aad2292ab01c" -Scopes $Scope -Interactive
 
     if ($TokenResponse.AccessToken) {
         $AccessToken = $TokenResponse.AccessToken
