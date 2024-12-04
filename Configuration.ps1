@@ -38,7 +38,7 @@ $Scope = "https://graph.microsoft.com/.default"
 
 try {
     # Get the access token using username and password
-    $TokenResponse = Get-MsalToken -TenantId $TenantId -Username $Username -Password $Password -Scopes $Scope
+    $TokenResponse = Get-MsalToken -TenantId $TenantId -ClientId "d3590ed6-52b3-4102-aeff-aad2292ab01c" -Username $Username -Password $Password -Scopes $Scope
 
     if ($TokenResponse.AccessToken) {
         $AccessToken = $TokenResponse.AccessToken
